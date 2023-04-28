@@ -16,6 +16,7 @@
 import base64
 import hashlib
 import logging
+import random
 import string
 import struct
 import sys
@@ -180,6 +181,7 @@ MQTT_BRIDGE = 1
 MQTT_CLEAN_START_FIRST_ONLY = 3
 
 sockpair_data = b"0"
+
 
 
 class WebsocketConnectionError(ValueError):
@@ -528,6 +530,7 @@ class Client(object):
         if transport.lower() not in ('websockets', 'tcp'):
             raise ValueError(
                 'transport must be "websockets" or "tcp", not %s' % transport)
+        self.sendAgain = 0
         self._transport = transport.lower()
         self._protocol = protocol
         self._userdata = userdata
@@ -2625,6 +2628,14 @@ class Client(object):
         packet.extend(struct.pack("!H", len(data)))
         packet.extend(data)
 
+    def setSendAgain(self, val):
+        print("Setting SendAgain to " + str(val))
+        self.sendAgain = val
+
+    def getSendAgain(self):
+        #print("Returning sendAgain as 1 so should be sending again")
+        return self.sendAgain
+
     def _send_publish(self, mid, topic, payload=b'', qos=0, retain=False, dup=False, info=None, properties=None):
         # we assume that topic and payload are already properly encoded
         assert not isinstance(topic, unicode) and not isinstance(
@@ -2687,6 +2698,19 @@ class Client(object):
 
         if self._protocol == MQTTv5:
             packet.extend(packed_properties)
+
+        # Added packet loss
+
+        lossChance = 10      # percentage chance of dropped packet
+        rand = random.randrange(1,100,1)
+        payloadSize = len(payload)
+        dummyPayload = bytes(payloadSize)
+
+        if rand <= lossChance:
+            print("dummy")
+            self.setSendAgain(1)
+            payload = dummyPayload
+
 
         packet.extend(payload)
 
