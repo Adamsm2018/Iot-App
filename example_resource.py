@@ -1,10 +1,10 @@
 from coapthon.resources.resource import Resource
 
 class BasicResource(Resource):
-    def __init__(self, name="BasicResource", coap_server=None):
+    def __init__(self, name="Temperature", coap_server=None):
         super(BasicResource, self).__init__(name, coap_server, visible=True,
                                             observable=True, allow_children=True)
-        self.payload = "Basic Resource"
+        self.payload = "25c"
 
     def render_GET(self, request):
         return self
