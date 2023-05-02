@@ -1,3 +1,12 @@
+# Mike Adams
+# IoT App Layer Project
+# MQTT Client library
+# Edited source code from Paho library. See lines 2640 and 2711 for areas of edits to add packet corruption 
+
+
+
+
+
 # Copyright (c) 2012-2019 Roger Light and others
 #
 # All rights reserved. This program and the accompanying materials
@@ -2628,11 +2637,11 @@ class Client(object):
         packet.extend(struct.pack("!H", len(data)))
         packet.extend(data)
 
-    def setSendAgain(self, val):
+    def setSendAgain(self, val):            # Set function for resend flag - Mike Adams
         print("Setting SendAgain to " + str(val))
         self.sendAgain = val
 
-    def getSendAgain(self):
+    def getSendAgain(self):                 # Get function for resend flag - Mike Adams
         #print("Returning sendAgain as 1 so should be sending again")
         return self.sendAgain
 
@@ -2699,19 +2708,19 @@ class Client(object):
         if self._protocol == MQTTv5:
             packet.extend(packed_properties)
 
-        # Added packet loss
+        # Added packet loss - Mike Adams
 
         lossChance = 10      # percentage chance of dropped packet
         rand = random.randrange(1,100,1)
         payloadSize = len(payload)
-        dummyPayload = bytes(payloadSize)
+        dummyPayload = bytes(payloadSize)       # Corrputed payload of all zeros. 
 
-        if rand <= lossChance:
+        if rand <= lossChance:          # in percent random chance, corrupt payload
             print("dummy")
-            self.setSendAgain(1)
+            self.setSendAgain(1)        # Flag to send message again
             payload = dummyPayload
 
-
+        # End of Mike Adams Code
         packet.extend(payload)
 
         return self._packet_queue(PUBLISH, packet, mid, qos, info)
